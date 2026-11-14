@@ -367,7 +367,6 @@ void add_new_character(tree_node_t* node, tree_node_t** current)
 
     char difference[BUFFER_SIZE] = {0};
     printf("%s different from %s: she is...", node -> data, data);
-    // while (getchar() != '\n');
     if (fgets(difference, sizeof(difference), stdin) != NULL)
     {
         size_t len = strlen(difference);
