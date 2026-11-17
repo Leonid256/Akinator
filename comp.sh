@@ -1,4 +1,4 @@
-g++ akinator_main.cpp akinator.cpp dump.cpp -D _DEBUG \
+g++ akinator_main.cpp akin_base.cpp akin_terminal.cpp dump.cpp -D _DEBUG \
 -ggdb3 -std=c++17 -Wall -Wextra -Weffc++ \
 -Wc++14-compat -Wmissing-declarations -Wcast-align \
 -Wcast-qual -Wchar-subscripts -Wconversion \
