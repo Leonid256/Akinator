@@ -12,7 +12,7 @@ tree_status app_init(app_t* app)
 
     tree_status tree_st = preorder_read(DATA_FILE, app -> tree);
 
-    InitWindow(800, 500, "PornOkinator");
+    InitWindow(1600, 1000, "PornOkinator");
     SetTargetFPS(60);
     app -> screen = S_MENU;
     app -> current = (app -> tree) -> root;
@@ -34,7 +34,7 @@ void app_run(app_t* app)
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        if (IsTextureValid(background)) DrawTextureEx(background, {0, -100}, 0, 0.78f, WHITE);
+        if (IsTextureValid(background)) DrawTextureEx(background, {0, -200}, 0, 1.56f, WHITE);
 
         draw_screen(app);
         EndDrawing();
@@ -96,9 +96,9 @@ bool button(Rectangle r, const char* text, Color base, Color hover, Color presse
     if (over) btnColor = IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? pressed : hover;
 
     DrawRectangleRec(r, btnColor);
-    DrawRectangleLinesEx(r, 2, BLACK);
+    DrawRectangleLinesEx(r, 4, BLACK);
 
-    int fontSize = 20;
+    int fontSize = 40;
     int textWidth  = MeasureText(text, fontSize);
     DrawText(text, (int)(r.x + (r.width - (float)textWidth) / 2), (int)(r.y + (r.height - (float)fontSize) / 2), fontSize, BLACK);
 
@@ -108,7 +108,7 @@ bool button(Rectangle r, const char* text, Color base, Color hover, Color presse
 //----------------------------------------------------------------------------
 void draw_centered(const char* text, int y, int fs)
 {
-    DrawText(text, (800 - MeasureText(text, fs)) / 2, y, fs, BLACK);
+    DrawText(text, (1600 - MeasureText(text, fs)) / 2, y, fs, BLACK);
 }
 
 //----------------------------------------------------------------------------
@@ -116,10 +116,10 @@ void draw_menu (app_t* app)
 {
     assert(app);
 
-    if (button({300, 90, 200, 60}, "Play", LIGHTGRAY, GREEN, DARKGREEN)) start_game(app);
-    if (button({300, 160, 200, 60}, "Save", LIGHTGRAY, GREEN, DARKGREEN)) akinator_save(DATA_FILE, app -> tree);
-    if (button({300, 230, 200, 60}, "Dump", LIGHTGRAY, GREEN, DARKGREEN)) dump_run(app -> tree, &app -> current);
-    if (button({300, 300, 200, 60}, "Exit", LIGHTGRAY, GREEN, DARKGREEN)) app -> running = false;
+    if (button({600, 180, 400, 120}, "Play", LIGHTGRAY, GREEN, DARKGREEN)) start_game(app);
+    if (button({600, 320, 400, 120}, "Save", LIGHTGRAY, GREEN, DARKGREEN)) akinator_save(DATA_FILE, app -> tree);
+    if (button({600, 460, 400, 120}, "Dump", LIGHTGRAY, GREEN, DARKGREEN)) dump_run(app -> tree, &app -> current);
+    if (button({600, 600, 400, 120}, "Exit", LIGHTGRAY, GREEN, DARKGREEN)) app -> running = false;
 }
 
 //----------------------------------------------------------------------------
@@ -127,10 +127,10 @@ void draw_ask(app_t* app)
 {
     assert(app);
 
-    draw_centered(TextFormat("%s?", app -> current -> data), 150, 30);
+    draw_centered(TextFormat("%s?", app -> current -> data), 300, 60);
 
-    if(button({260, 250, 100, 50}, "Yes", GREEN, LIME, DARKGREEN)) answer_question(app, true);
-    if(button({440, 250, 100, 50}, "No", RED, PINK, MAROON)) answer_question(app, false);
+    if(button({520, 500, 200, 100}, "Yes", GREEN, LIME, DARKGREEN)) answer_question(app, true);
+    if(button({880, 500, 200, 100}, "No", RED, PINK, MAROON)) answer_question(app, false);
 }
 
 //----------------------------------------------------------------------------
@@ -138,16 +138,16 @@ void draw_guess(app_t* app)
 {
     assert(app);
 
-    draw_centered(TextFormat("It's %s?", app -> current -> data), 150, 30);
+    draw_centered(TextFormat("It's %s?", app -> current -> data), 300, 60);
 
-    if(button({260, 250, 100, 50}, "Yes", GREEN, LIME, DARKGREEN))
+    if(button({520, 500, 200, 100}, "Yes", GREEN, LIME, DARKGREEN))
     {
         UnloadTexture(app -> pic);
         app -> pic = LoadTexture(TextFormat("images/%s.png", app -> current -> data));
         app -> screen = S_WIN;
     }
 
-    if(button({440, 250, 100, 50}, "No", RED, PINK, MAROON))
+    if(button({880, 500, 200, 100}, "No", RED, PINK, MAROON))
     {
         app -> name[0] = '\0';
         app -> diff[0] = '\0';
@@ -162,21 +162,21 @@ void draw_win(app_t* app)
 
     if (IsTextureValid(app -> pic))
     {
-        float box   = 380.0f;
+        float box   = 760.0f;
         float scale = box / (float)fmax(app -> pic.width, app -> pic.height);
         float w = (float)app -> pic.width  * scale;
         float h = (float)app -> pic.height * scale;
 
         Rectangle src = {0, 0, (float)app -> pic.width, (float)app -> pic.height};
-        Rectangle dst = {(800.0f - w) / 2.0f, 20.0f + (box - h) / 2.0f, w, h};
+        Rectangle dst = {(1600.0f - w) / 2.0f, 40.0f + (box - h) / 2.0f, w, h};
         DrawTexturePro(app -> pic, src, dst, {0, 0}, 0, WHITE);
     }
     else
     {
-        draw_centered("(no picture)", 200, 24);
+        draw_centered("(no picture)", 400, 48);
     }
 
-    if (button({350, 420, 100, 50}, "Menu", LIGHTGRAY, GREEN, DARKGREEN))
+    if (button({700, 840, 200, 100}, "Menu", LIGHTGRAY, GREEN, DARKGREEN))
     {
         UnloadTexture(app -> pic);
         app -> pic = {};
@@ -210,23 +210,23 @@ bool text_input(char* buf, size_t cap, int max_width, int font_size)
 //----------------------------------------------------------------------------
 void draw_name(app_t* app)
 {
-    DrawText("Who is it?", 300, 265, 30, DARKBLUE);
-    DrawRectangle(200, 300, 400, 50, BLUE);
-    DrawRectangleLines(200, 300, 400, 50, DARKBLUE);
-    DrawText(app -> name, 210, 312, 28, MAROON);
+    DrawText("Who is it?", 600, 530, 60, DARKBLUE);
+    DrawRectangle(400, 600, 800, 100, BLUE);
+    DrawRectangleLines(400, 600, 800, 100, DARKBLUE);
+    DrawText(app -> name, 420, 624, 56, MAROON);
 
-    if (text_input(app -> name, BUFFER_SIZE, 380, 28)) app -> screen = S_DIFF;
+    if (text_input(app -> name, BUFFER_SIZE, 760, 56)) app -> screen = S_DIFF;
 }
 
 //----------------------------------------------------------------------------
 void draw_diff(app_t* app)
 {
-    DrawText(TextFormat("%s differs from %s...", app -> current -> data, app -> name), 50, 200, 20, DARKBLUE);
-    DrawRectangle(200, 300, 400, 50, BLUE);
-    DrawRectangleLines(200, 300, 400, 50, DARKBLUE);
-    DrawText(app -> diff, 210, 312, 28, MAROON);
+    DrawText(TextFormat("%s differs from %s...", app -> current -> data, app -> name), 100, 400, 40, DARKBLUE);
+    DrawRectangle(400, 600, 800, 100, BLUE);
+    DrawRectangleLines(400, 600, 800, 100, DARKBLUE);
+    DrawText(app -> diff, 420, 624, 56, MAROON);
 
-    if (text_input(app -> diff, BUFFER_SIZE, 380, 28)) commit_character(app);
+    if (text_input(app -> diff, BUFFER_SIZE, 760, 56)) commit_character(app);
 }
 
 //----------------------------------------------------------------------------
