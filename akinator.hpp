@@ -120,5 +120,9 @@ void answer_question(app_t* app, bool yes);
 // void guess_wrong(app_t* app);                   // очистить name/diff, screen = S_NAME
 void commit_character(app_t* app);
 void update_screen_for_node(app_t* app);
+
+bool button(Rectangle r, const char* text, Color base, Color hover, Color pressed);
+void draw_centered(const char* text, int y, int fs);
+
 //----------------------------------------------------------------------------
 #endif
