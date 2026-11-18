@@ -13,4 +13,4 @@ g++ akinator_main.cpp akin_base.cpp akin_terminal.cpp dump.cpp -D _DEBUG \
 -Wno-varargs -Wstack-protector -fcheck-new -fsized-deallocation \
 -fstack-protector -fstrict-overflow -fno-omit-frame-pointer \
 -Wlarger-than=8192 -fPIE -Werror=vla -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr \
--o akinator.out
+-o akinator_terminal.out

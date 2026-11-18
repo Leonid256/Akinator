@@ -44,7 +44,7 @@ tree_status preorder_read(const char* const pre_file, tree_t* tree)
     FILE* file = fopen(pre_file, "r");
     if (!file)
     {
-        printf(RED "Error in preorder_read\n" CRESET);
+        printf(MY_RED "Error in preorder_read\n" CRESET);
         return TREE_ERROR;
     }
 
@@ -58,7 +58,7 @@ tree_status preorder_read(const char* const pre_file, tree_t* tree)
 
     if (buffer_file[i++] != '(')
     {
-        printf(RED "Error in preorder_read\n" CRESET);
+        printf(MY_RED "Error in preorder_read\n" CRESET);
         free(buffer_file);
         return TREE_ERROR;
     }
@@ -69,7 +69,7 @@ tree_status preorder_read(const char* const pre_file, tree_t* tree)
         tree -> root = root;
     else
     {
-        printf(RED "Error in preorder_read\n" CRESET);
+        printf(MY_RED "Error in preorder_read\n" CRESET);
         free(buffer_file);
         return TREE_ERROR;
     }
@@ -87,7 +87,7 @@ tree_node_t* pre_new_node(char* buffer_file, tree_node_t* parent, size_t* size, 
     tree_node_t* node = (tree_node_t*) calloc(1, sizeof(tree_node_t));
     if (node == NULL)
     {
-        printf(RED "Error in pre_new_node\n" CRESET);
+        printf(MY_RED "Error in pre_new_node\n" CRESET);
         return NULL;
     }
 
@@ -125,14 +125,14 @@ tree_node_t* pre_new_node(char* buffer_file, tree_node_t* parent, size_t* size, 
     }
     else
     {
-        printf(RED "Error in pre_new_node\n" CRESET);
+        printf(MY_RED "Error in pre_new_node\n" CRESET);
         return NULL;
     }
 
     while(buffer_file[*i] != '\0' && buffer_file[*i] != '(' && buffer_file[*i] != ')') (*i)++;
     if (buffer_file[*i] == ')')
     {
-        printf(RED "Error in pre_new_node: node has only one child\n" CRESET);
+        printf(MY_RED "Error in pre_new_node: node has only one child\n" CRESET);
         delete_subtree(node);
         return NULL;
     }
@@ -148,13 +148,13 @@ tree_node_t* pre_new_node(char* buffer_file, tree_node_t* parent, size_t* size, 
     }
     else
     {
-        printf(RED "Error in pre_new_node\n" CRESET);
+        printf(MY_RED "Error in pre_new_node\n" CRESET);
         return NULL;
     }
 
     if (buffer_file[*i] != ')')
     {
-        printf(RED "Error in pre_new_node\n" CRESET);
+        printf(MY_RED "Error in pre_new_node\n" CRESET);
         return NULL;
     }
     
@@ -185,7 +185,7 @@ tree_status akinator_save(const char* const file_name, tree_t* tree)
     FILE* file = fopen(file_name, "w");
     if (!file)
     {
-        printf(RED "Error in save_tree\n" CRESET);
+        printf(MY_RED "Error in save_tree\n" CRESET);
         return TREE_ERROR;
     }
 

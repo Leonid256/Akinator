@@ -76,7 +76,6 @@ struct app_t
     screen_t     screen;
     tree_elem_t  name;
     tree_elem_t  diff;
-    Texture2D    pic;
     bool         running;
 };
 
@@ -115,5 +114,11 @@ void draw_win  (app_t* app);
 void draw_name (app_t* app);
 void draw_diff (app_t* app);
 
+void start_game(app_t* app);
+void answer_question(app_t* app, bool yes);
+// void guess_correct(app_t* app);                 // load_picture(node->data), screen = S_WIN
+// void guess_wrong(app_t* app);                   // очистить name/diff, screen = S_NAME
+void commit_character(app_t* app);
+void update_screen_for_node(app_t* app);
 //----------------------------------------------------------------------------
 #endif

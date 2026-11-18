@@ -36,7 +36,7 @@ void dump_run(tree_t* tree, tree_node_t** current)       //terminal version
     FILE* dump_file = fopen(GRAPH_FILE, "w");
     if (!dump_file)
     {
-        printf(RED "Error: can't open %s\n" CRESET, GRAPH_FILE);
+        printf(MY_RED "Error: can't open %s\n" CRESET, GRAPH_FILE);
         return;
     }
 
@@ -45,7 +45,7 @@ void dump_run(tree_t* tree, tree_node_t** current)       //terminal version
 
     if (system("dot -Tsvg tree.dot -o tree.svg") != 0)
     {
-        printf(RED "Error: dot failed\n" CRESET);
+        printf(MY_RED "Error: dot failed\n" CRESET);
         return;
     }
 
@@ -78,7 +78,7 @@ void akinator_run(tree_t* tree, tree_node_t** current)       //terminal version
                 return;
             case MODE_UNKNOWN:
             default:
-                printf(RED "Error: wrong mode, try again\n" CRESET);
+                printf(MY_RED "Error: wrong mode, try again\n" CRESET);
                 break;
         }
     }
@@ -101,7 +101,7 @@ user_answer get_user_answer()        //terminal version
         else continue;
     }
 
-    printf(RED "Error in get_user_answer\n" CRESET);
+    printf(MY_RED "Error in get_user_answer\n" CRESET);
     return ANSWER_NO;
 }
 
@@ -128,7 +128,7 @@ void akinator_play(tree_node_t* node, tree_node_t** current)  //terminal version
                 return;
             case ANSWER_UNKNOWN:
             default:
-                printf(RED "Error in akinator_play\n" CRESET);
+                printf(MY_RED "Error in akinator_play\n" CRESET);
                 return;
         }
     }
@@ -146,7 +146,7 @@ void akinator_play(tree_node_t* node, tree_node_t** current)  //terminal version
                 break;
             case ANSWER_UNKNOWN:
             default:
-                printf(RED "Error in akinator_play\n" CRESET);
+                printf(MY_RED "Error in akinator_play\n" CRESET);
                 break;
         }
     }
