@@ -11,6 +11,7 @@ typedef char* tree_elem_t;
 #include <ctype.h>
 #include <string.h>
 #include <raylib.h>
+#include <math.h>
 
 #include "colours.hpp"
 
@@ -76,6 +77,7 @@ struct app_t
     screen_t     screen;
     tree_elem_t  name;
     tree_elem_t  diff;
+    Texture2D    pic;
     bool         running;
 };
 
@@ -116,13 +118,12 @@ void draw_diff (app_t* app);
 
 void start_game(app_t* app);
 void answer_question(app_t* app, bool yes);
-// void guess_correct(app_t* app);                 // load_picture(node->data), screen = S_WIN
-// void guess_wrong(app_t* app);                   // очистить name/diff, screen = S_NAME
 void commit_character(app_t* app);
 void update_screen_for_node(app_t* app);
 
 bool button(Rectangle r, const char* text, Color base, Color hover, Color pressed);
 void draw_centered(const char* text, int y, int fs);
+bool text_input(char* buf, size_t cap, int max_width, int font_size);
 
 //----------------------------------------------------------------------------
 #endif

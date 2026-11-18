@@ -17,6 +17,7 @@ tree_status app_init(app_t* app)
     app -> screen = S_MENU;
     app -> current = (app -> tree) -> root;
     app -> running = true;
+    app -> pic = {};
 
     return tree_st;
 }
@@ -26,14 +27,15 @@ void app_run(app_t* app)
 {
     assert(app);
 
-    Texture2D background = LoadTexture("..//images/logo.png");
+    Texture2D background = LoadTexture("images/logo.png");
 
     while(app -> running && !WindowShouldClose())
     {
         BeginDrawing();
-        if (IsTextureValid(background)) DrawTexture(background, 0, 0, WHITE);
-
         ClearBackground(RAYWHITE);
+
+        if (IsTextureValid(background)) DrawTextureEx(background, {0, -100}, 0, 0.78f, WHITE);
+
         draw_screen(app);
         EndDrawing();
     }
@@ -138,9 +140,14 @@ void draw_guess(app_t* app)
 
     draw_centered(TextFormat("It's %s?", app -> current -> data), 150, 30);
 
-    if(button({260, 250, 100, 50}, "Yes", GREEN, LIME, DARKGREEN)) app -> screen = S_WIN;
+    if(button({260, 250, 100, 50}, "Yes", GREEN, LIME, DARKGREEN))
+    {
+        UnloadTexture(app -> pic);
+        app -> pic = LoadTexture(TextFormat("images/%s.png", app -> current -> data));
+        app -> screen = S_WIN;
+    }
 
-    if(button({440, 250, 100, 50}, "No", GREEN, LIME, DARKGREEN))
+    if(button({440, 250, 100, 50}, "No", RED, PINK, MAROON))
     {
         app -> name[0] = '\0';
         app -> diff[0] = '\0';
@@ -153,17 +160,31 @@ void draw_win(app_t* app)
 {
     assert(app);
 
-    if (button({350, 420, 100, 50}, "Menu", LIGHTGRAY, GREEN, DARKGREEN)) app -> screen = S_MENU;
+    if (IsTextureValid(app -> pic))
+    {
+        float box   = 380.0f;
+        float scale = box / (float)fmax(app -> pic.width, app -> pic.height);
+        float w = (float)app -> pic.width  * scale;
+        float h = (float)app -> pic.height * scale;
 
-    Texture2D texture = LoadTexture(TextFormat("%s.png", app -> current));
-    if (IsTextureValid(texture))
-        DrawTexture(texture, 100, 50, WHITE);
+        Rectangle src = {0, 0, (float)app -> pic.width, (float)app -> pic.height};
+        Rectangle dst = {(800.0f - w) / 2.0f, 20.0f + (box - h) / 2.0f, w, h};
+        DrawTexturePro(app -> pic, src, dst, {0, 0}, 0, WHITE);
+    }
+    else
+    {
+        draw_centered("(no picture)", 200, 24);
+    }
 
-    UnloadTexture(texture);
+    if (button({350, 420, 100, 50}, "Menu", LIGHTGRAY, GREEN, DARKGREEN))
+    {
+        UnloadTexture(app -> pic);
+        app -> pic = {};
+        app -> screen = S_MENU;
+    }
 }
-
 //----------------------------------------------------------------------------
-bool text_input(char* buf, size_t cap)
+bool text_input(char* buf, size_t cap, int max_width, int font_size)
 {
     size_t len = strlen(buf);
 
@@ -172,8 +193,11 @@ bool text_input(char* buf, size_t cap)
     {
         if (c >= 32 && c < 127 && len + 1 < cap)
         {
-            buf[len++] = (char)c;
-            buf[len] = '\0';
+            buf[len] = (char)c;
+            buf[len + 1] = '\0';
+
+            if (MeasureText(buf, font_size) <= max_width) len++;
+            else buf[len] = '\0';
         }
     }
 
@@ -186,23 +210,23 @@ bool text_input(char* buf, size_t cap)
 //----------------------------------------------------------------------------
 void draw_name(app_t* app)
 {
-    DrawText("Who is it?", 300, 265, 20, GRAY);
-    DrawRectangle(300, 300, 200, 50, LIGHTGRAY);
-    DrawRectangleLines(300, 300, 200, 50, DARKGRAY);
-    DrawText(app -> name, 310, 312, 28, MAROON);
+    DrawText("Who is it?", 300, 265, 30, DARKBLUE);
+    DrawRectangle(200, 300, 400, 50, BLUE);
+    DrawRectangleLines(200, 300, 400, 50, DARKBLUE);
+    DrawText(app -> name, 210, 312, 28, MAROON);
 
-    if (text_input(app->name, BUFFER_SIZE)) app -> screen = S_DIFF;
+    if (text_input(app -> name, BUFFER_SIZE, 380, 28)) app -> screen = S_DIFF;
 }
 
 //----------------------------------------------------------------------------
 void draw_diff(app_t* app)
 {
-    DrawText(TextFormat("%s differs from %s...", app -> current -> data, app -> name), 50, 200, 20, GRAY);
-    DrawRectangle(300, 300, 200, 50, LIGHTGRAY);
-    DrawRectangleLines(300, 300, 200, 50, DARKGRAY);
-    DrawText(app -> diff, 310, 312, 28, MAROON);
+    DrawText(TextFormat("%s differs from %s...", app -> current -> data, app -> name), 50, 200, 20, DARKBLUE);
+    DrawRectangle(200, 300, 400, 50, BLUE);
+    DrawRectangleLines(200, 300, 400, 50, DARKBLUE);
+    DrawText(app -> diff, 210, 312, 28, MAROON);
 
-    if (text_input(app -> diff, BUFFER_SIZE)) commit_character(app);
+    if (text_input(app -> diff, BUFFER_SIZE, 380, 28)) commit_character(app);
 }
 
 //----------------------------------------------------------------------------
