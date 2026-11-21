@@ -2,9 +2,10 @@
 
 //----------------------------------------------------------------------------
 //SCREEN VERSION VVVVVVVVV//
-tree_status app_init(app_t* app)
+tree_status app_init(app_t* app, Font* font)
 {
     assert(app);
+    assert(font);
 
     app -> tree = (tree_t*)calloc(1, sizeof(tree_t));
     app -> name = (tree_elem_t)calloc(BUFFER_SIZE, 1);
@@ -13,21 +14,41 @@ tree_status app_init(app_t* app)
     tree_status tree_st = preorder_read(DATA_FILE, app -> tree);
 
     InitWindow(1600, 1000, "PornOkinator");
+
+    InitAudioDevice();
+    app -> snd_win = LoadSound(SND_WIN_FILE);
+    SetSoundVolume(app -> snd_win, 0.5f);
+
     SetTargetFPS(60);
     app -> screen = S_MENU;
     app -> current = (app -> tree) -> root;
     app -> running = true;
     app -> pic = {};
 
+    int codepointsCount = 0;
+    int *codepoints = LoadCodepoints(
+        " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+        "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+        &codepointsCount
+    );
+    
+    *font = LoadFontEx(FONT_FILE, 32, codepoints, codepointsCount);
+    UnloadCodepoints(codepoints);
+
     return tree_st;
 }
 
 //----------------------------------------------------------------------------
-void app_run(app_t* app)
+void app_run(app_t* app, Font* font)
 {
     assert(app);
+    assert(font);
 
-    Texture2D background = LoadTexture("images/logo.png");
+    Sound snd = LoadSound(SND_LOGO_FILE);
+    SetSoundVolume(snd, 0.5f);
+    PlaySound(snd);
+
+    Texture2D background = LoadTexture("assets/images/logo.png");
 
     while(app -> running && !WindowShouldClose())
     {
@@ -36,18 +57,23 @@ void app_run(app_t* app)
 
         if (IsTextureValid(background)) DrawTextureEx(background, {0, -200}, 0, 1.56f, WHITE);
 
-        draw_screen(app);
+        draw_screen(app, font);
         EndDrawing();
     }
 
+    UnloadSound(snd);
     UnloadTexture(background);
 }
 
-void app_shutdown(app_t* app)
+void app_shutdown(app_t* app, Font* font)
 {
     assert(app);
+    assert(font);
 
-    //unload_picture(app);
+    UnloadSound(app -> snd_win);
+    CloseAudioDevice();
+
+    UnloadFont(*font);
     CloseWindow();
     delete_subtree((app -> tree) -> root);
 
@@ -57,7 +83,7 @@ void app_shutdown(app_t* app)
 }
 
 //----------------------------------------------------------------------------
-void draw_screen(app_t* app)
+void draw_screen(app_t* app, Font* font)
 {
     assert(app);
 
@@ -67,19 +93,19 @@ void draw_screen(app_t* app)
             draw_menu(app);
             break;
         case S_ASK:
-            draw_ask(app);
+            draw_ask(app, font);
             break;
         case S_GUESS:
-            draw_guess(app);
+            draw_guess(app, font);
             break;
         case S_WIN:
-            draw_win(app);
+            draw_win(app, font);
             break;
         case S_NAME:
-            draw_name(app);
+            draw_name(app, font);
             break;
         case S_DIFF:
-            draw_diff(app);
+            draw_diff(app, font);
             break;
         default:
             draw_menu(app);
@@ -106,9 +132,13 @@ bool button(Rectangle r, const char* text, Color base, Color hover, Color presse
 }
 
 //----------------------------------------------------------------------------
-void draw_centered(const char* text, int y, int fs)
+void draw_centered(const char* text, int y, int fs, Font* font)
 {
-    DrawText(text, (1600 - MeasureText(text, fs)) / 2, y, fs, BLACK);
+    assert(text);
+    assert(font);
+
+    Vector2 position = {(1600.0f - MeasureText(text, fs)) / 2.0f, (float)y};
+    DrawTextEx(*font, text, position, (float)fs, 0.0, BLACK);
 }
 
 //----------------------------------------------------------------------------
@@ -123,27 +153,31 @@ void draw_menu (app_t* app)
 }
 
 //----------------------------------------------------------------------------
-void draw_ask(app_t* app)
+void draw_ask(app_t* app, Font* font)
 {
     assert(app);
+    assert(font);
 
-    draw_centered(TextFormat("%s?", app -> current -> data), 300, 60);
+    draw_centered(TextFormat("%s?", app -> current -> data), 300, 60, font);
 
     if(button({520, 500, 200, 100}, "Yes", GREEN, LIME, DARKGREEN)) answer_question(app, true);
     if(button({880, 500, 200, 100}, "No", RED, PINK, MAROON)) answer_question(app, false);
 }
 
 //----------------------------------------------------------------------------
-void draw_guess(app_t* app)
+void draw_guess(app_t* app, Font* font)
 {
     assert(app);
+    assert(font);
 
-    draw_centered(TextFormat("It's %s?", app -> current -> data), 300, 60);
+    draw_centered(TextFormat("Это %s?", app -> current -> data), 300, 60, font);
 
     if(button({520, 500, 200, 100}, "Yes", GREEN, LIME, DARKGREEN))
     {
+        PlaySound(app -> snd_win);
+
         UnloadTexture(app -> pic);
-        app -> pic = LoadTexture(TextFormat("images/%s.png", app -> current -> data));
+        app -> pic = LoadTexture(TextFormat("assets/images/%s.png", app -> current -> data));
         app -> screen = S_WIN;
     }
 
@@ -156,9 +190,10 @@ void draw_guess(app_t* app)
 }
 
 //----------------------------------------------------------------------------
-void draw_win(app_t* app)
+void draw_win(app_t* app, Font* font)
 {
     assert(app);
+    assert(font);
 
     if (IsTextureValid(app -> pic))
     {
@@ -173,7 +208,7 @@ void draw_win(app_t* app)
     }
     else
     {
-        draw_centered("(no picture)", 400, 48);
+        draw_centered("(no picture)", 400, 48, font);
     }
 
     if (button({700, 840, 200, 100}, "Menu", LIGHTGRAY, GREEN, DARKGREEN))
@@ -184,49 +219,77 @@ void draw_win(app_t* app)
     }
 }
 //----------------------------------------------------------------------------
-bool text_input(char* buf, size_t cap, int max_width, int font_size)
+bool text_input(char* buf, size_t cap, int max_width, int font_size, Font* font)
 {
     size_t len = strlen(buf);
 
     int c = 0;
     while ((c = GetCharPressed()) > 0)
     {
-        if (c >= 32 && c < 127 && len + 1 < cap)
-        {
-            buf[len] = (char)c;
-            buf[len + 1] = '\0';
+        if (c < 32 || c == 127) continue;
 
-            if (MeasureText(buf, font_size) <= max_width) len++;
+        int n = 0;
+        const char* data = CodepointToUTF8(c, &n);
+
+        if (len + (size_t)n < cap)
+        {
+            memcpy(buf + len, data, (size_t)n);
+            buf[len + (size_t)n] = '\0';
+
+            if (MeasureTextEx(*font, buf, (float)font_size, 0.0f).x <= (float)max_width) len += (size_t)n;
             else buf[len] = '\0';
         }
     }
 
-    if (IsKeyPressed(KEY_BACKSPACE) && len > 0)
-        buf[--len] = '\0';
+    if (IsKeyPressed(KEY_BACKSPACE) || IsKeyPressedRepeat(KEY_BACKSPACE))
+    {
+        while (len > 0)
+        {
+            len--;
+            if (((unsigned char)buf[len] & 0xC0) != 0x80) break;
+        }
+        buf[len] = '\0';
+    }
 
     return IsKeyPressed(KEY_ENTER) && len > 0;
 }
 
 //----------------------------------------------------------------------------
-void draw_name(app_t* app)
+void draw_name(app_t* app, Font* font)
 {
-    DrawText("Who is it?", 600, 530, 60, DARKBLUE);
-    DrawRectangle(400, 600, 800, 100, BLUE);
-    DrawRectangleLines(400, 600, 800, 100, DARKBLUE);
-    DrawText(app -> name, 420, 624, 56, MAROON);
+    assert(app);
+    assert(font);
 
-    if (text_input(app -> name, BUFFER_SIZE, 760, 56)) app -> screen = S_DIFF;
+    DrawRectangle(200, 450, 1200, 300, WHITE);
+
+    Vector2 position = {600.0f, 530.0f};
+    DrawTextEx(*font, "Кто это?", position, 60, 0.0f, BLACK);
+    DrawRectangle(400, 600, 800, 100, WHITE);
+    DrawRectangleLines(400, 600, 800, 100, BLACK);
+
+    position = {420.0f, 624.0f};
+    DrawTextEx(*font, app -> name, position, 56, 0.0, BLACK);
+
+    if (text_input(app -> name, BUFFER_SIZE, 760, 56, font)) app -> screen = S_DIFF;
 }
 
 //----------------------------------------------------------------------------
-void draw_diff(app_t* app)
+void draw_diff(app_t* app, Font* font)
 {
-    DrawText(TextFormat("%s differs from %s...", app -> current -> data, app -> name), 100, 400, 40, DARKBLUE);
-    DrawRectangle(400, 600, 800, 100, BLUE);
-    DrawRectangleLines(400, 600, 800, 100, DARKBLUE);
-    DrawText(app -> diff, 420, 624, 56, MAROON);
+    assert(app);
+    assert(font);
+    
+    DrawRectangle(200, 450, 1200, 300, WHITE);
 
-    if (text_input(app -> diff, BUFFER_SIZE, 760, 56)) commit_character(app);
+    Vector2 position = {250.0f, 530.0f};
+    DrawTextEx(*font, TextFormat("%s отличается от %s...", app -> current -> data, app -> name), position, 60, 0.0f, BLACK);
+    DrawRectangle(400, 600, 800, 100, WHITE);
+    DrawRectangleLines(400, 600, 800, 100, BLACK);
+
+    position = {420.0f, 624.0f};
+    DrawTextEx(*font, app -> diff, position, 56, 0.0, BLACK);
+
+    if (text_input(app -> diff, BUFFER_SIZE, 760, 56, font)) commit_character(app);
 }
 
 //----------------------------------------------------------------------------

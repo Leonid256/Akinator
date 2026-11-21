@@ -14,7 +14,8 @@ int main()
 
     // //Screen version
     app_t app = {};
-    if (app_init(&app) != TREE_OK) return TREE_ERROR;
-    app_run(&app);
-    app_shutdown(&app);
+    Font font;
+    if (app_init(&app, &font) != TREE_OK) return TREE_ERROR;
+    app_run(&app, &font);
+    app_shutdown(&app, &font);
 }

@@ -16,9 +16,12 @@ typedef char* tree_elem_t;
 #include "colours.hpp"
 
 //----------------------------------------------------------------------------
-const char* const GRAPH_FILE = "tree.dot";
-const char* const SVG_FILE   = "tree.svg";
-const char* const DATA_FILE = "data_akinator.txt";
+const char* const GRAPH_FILE    = "tree.dot";
+const char* const SVG_FILE      = "tree.svg";
+const char* const DATA_FILE     = "data_akinator.txt";
+const char* const FONT_FILE     = "assets/fonts/font_TNR.ttf";
+const char* const SND_LOGO_FILE = "assets/sounds/logo.mp3";
+const char* const SND_WIN_FILE  = "assets/sounds/moans.mp3";
 
 const size_t BUFFER_SIZE = 256;
 
@@ -67,7 +70,7 @@ enum screen_t
     S_GUESS,
     S_WIN,
     S_NAME,
-    S_DIFF  //TODO: мб нахуй не надо??
+    S_DIFF
 };
 
 struct app_t
@@ -79,6 +82,7 @@ struct app_t
     tree_elem_t  diff;
     Texture2D    pic;
     bool         running;
+    Sound        snd_win;
 };
 
 //----------------------------------------------------------------------------
@@ -104,17 +108,17 @@ void add_new_character(tree_node_t* node, tree_node_t** current);
 void call_graphic_dump(void);
 
 //screen version
-tree_status app_init(app_t* app);
-void app_run(app_t* app);
-void app_shutdown(app_t* app);
-void draw_screen(app_t* app);
+tree_status app_init(app_t* app, Font* font);
+void app_run(app_t* app, Font* font);
+void app_shutdown(app_t* app, Font* font);
+void draw_screen(app_t* app, Font* font);
 
 void draw_menu (app_t* app);
-void draw_ask  (app_t* app);
-void draw_guess(app_t* app);
-void draw_win  (app_t* app);
-void draw_name (app_t* app);
-void draw_diff (app_t* app);
+void draw_ask  (app_t* app, Font* font);
+void draw_guess(app_t* app, Font* font);
+void draw_win  (app_t* app, Font* font);
+void draw_name (app_t* app, Font* font);
+void draw_diff (app_t* app, Font* font);
 
 void start_game(app_t* app);
 void answer_question(app_t* app, bool yes);
@@ -122,8 +126,8 @@ void commit_character(app_t* app);
 void update_screen_for_node(app_t* app);
 
 bool button(Rectangle r, const char* text, Color base, Color hover, Color pressed);
-void draw_centered(const char* text, int y, int fs);
-bool text_input(char* buf, size_t cap, int max_width, int font_size);
+void draw_centered(const char* text, int y, int fs, Font* font);
+bool text_input(char* buf, size_t cap, int max_width, int font_size, Font* font);
 
 //----------------------------------------------------------------------------
 #endif
